@@ -209,7 +209,8 @@ const I18N = {
   msg_perfil_ok:     { pt: 'Perfil atualizado!', en: 'Profile updated!', es: '¡Perfil actualizado!' },
   msg_senha_ok:      { pt: 'Senha alterada com sucesso!', en: 'Password changed successfully!', es: '¡Contraseña cambiada con éxito!' },
   msg_preencha_senhas:{ pt: 'Preencha a senha atual e a nova.', en: 'Fill in the current and new password.', es: 'Completa la contraseña actual y la nueva.' },
-  msg_foto_grande:   { pt: 'Imagem muito grande (máx. 4 MB).', en: 'Image too large (max 4 MB).', es: 'Imagen demasiado grande (máx. 4 MB).' },
+  msg_foto_grande:   { pt: 'Imagem muito grande.', en: 'Image too large.', es: 'Imagen demasiado grande.' },
+  msg_foto_invalida: { pt: 'Não foi possível ler essa imagem.', en: 'Could not read this image.', es: 'No se pudo leer esta imagen.' },
   msg_foto_ok:       { pt: 'Foto atualizada!', en: 'Photo updated!', es: '¡Foto actualizada!' },
   lbl_tema:          { pt: 'Tema de cores', en: 'Color theme', es: 'Tema de colores' },
   tema_1:            { pt: 'Âmbar - Perfumaria', en: 'Amber - Perfumery', es: 'Ámbar - Perfumería' },
@@ -355,13 +356,13 @@ const AVATAR_PADRAO = 'data:image/svg+xml;utf8,' + encodeURIComponent(
 const APP_URL = 'https://script.google.com/macros/s/AKfycbzUttvI6kZXkUyquJM3UGC-Su4Y1dEKWLme7uC6If741hNOzPRbQ8Hjq9fKx7a_Ivg5/exec';
 
 function api(acao, payload) {
-  return fetch(APP_URL, {
-    method: 'POST',
-    // Content-Type text/plain de propósito (mesmo o corpo sendo JSON): evita
-    // que o navegador dispare um preflight OPTIONS, que o Apps Script não trata.
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ acao: acao, payload: payload || {}, token: S.token })
-  })
+  // GET, não POST: é a única forma que a resposta do Apps Script vem com
+  // Access-Control-Allow-Origin (testado - POST é bloqueado por CORS mesmo
+  // com o doPost implementado certinho no servidor). Os dados vão como
+  // parâmetro de URL (?data=...), então cuidado com payloads grandes
+  // (ex: upload de foto em base64) - isso usa outra rota, ver enviarFoto().
+  const dados = encodeURIComponent(JSON.stringify({ acao: acao, payload: payload || {}, token: S.token }));
+  return fetch(APP_URL + '?data=' + dados)
     .then(function (resp) { return resp.json(); })
     .then(function (r) {
       if (r && r.ok) return r.data;
@@ -1817,20 +1818,40 @@ function buscarFormulasGerais() {
 function irPagFormulasGerais(p) { _carregarFormulasGeral(FORM_GERAL, p); }
 function abrirDetalheFormulaGeralLog(formId) { _abrirDetalheFormulaGeral(FORM_GERAL, formId); }
 
+// Tamanho final do avatar (quadrado). A API do frontend estático vai por GET
+// (dados na URL, ver api() acima), então a foto precisa ser pequena - por
+// isso ela é redimensionada/comprimida no navegador antes de enviar,
+// independente do tamanho do arquivo original.
+const FOTO_LADO_PX = 256;
+const FOTO_QUALIDADE_JPEG = 0.82;
+
 function enviarFoto(input) {
   const arquivo = input.files && input.files[0];
+  input.value = '';
   if (!arquivo) return;
-  if (arquivo.size > 4 * 1024 * 1024) return toast(t('msg_foto_grande'), 'erro');
-  const leitor = new FileReader();
-  leitor.onload = function () {
-    const base64 = String(leitor.result).split(',')[1];
+  if (!arquivo.type || arquivo.type.indexOf('image/') !== 0) return toast(t('msg_foto_invalida'), 'erro');
+  if (arquivo.size > 20 * 1024 * 1024) return toast(t('msg_foto_grande'), 'erro');
+
+  const url = URL.createObjectURL(arquivo);
+  const img = new Image();
+  img.onload = function () {
+    URL.revokeObjectURL(url);
+    const lado = Math.min(img.naturalWidth, img.naturalHeight);
+    const sx = (img.naturalWidth - lado) / 2;
+    const sy = (img.naturalHeight - lado) / 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = FOTO_LADO_PX;
+    canvas.height = FOTO_LADO_PX;
+    canvas.getContext('2d').drawImage(img, sx, sy, lado, lado, 0, 0, FOTO_LADO_PX, FOTO_LADO_PX);
+    const base64 = canvas.toDataURL('image/jpeg', FOTO_QUALIDADE_JPEG).split(',')[1];
+
     carregando(true);
-    api('user.foto', { base64: base64, mime: arquivo.type }).then(function (r) {
+    api('user.foto', { base64: base64, mime: 'image/jpeg' }).then(function (r) {
       S.user.user_img_url = r.user_img_url;
       carregando(false); atualizarAvatar();
       toast(t('msg_foto_ok'));
     }).catch(function (e) { carregando(false); toast(e.message, 'erro'); });
   };
-  leitor.readAsDataURL(arquivo);
-  input.value = '';
+  img.onerror = function () { URL.revokeObjectURL(url); toast(t('msg_foto_invalida'), 'erro'); };
+  img.src = url;
 }
