@@ -355,21 +355,33 @@ const AVATAR_PADRAO = 'data:image/svg+xml;utf8,' + encodeURIComponent(
 /* URL /exec da implantação do Apps Script (Implantar → Gerenciar implantações → copiar URL). */
 const APP_URL = 'https://script.google.com/macros/s/AKfycbzUttvI6kZXkUyquJM3UGC-Su4Y1dEKWLme7uC6If741hNOzPRbQ8Hjq9fKx7a_Ivg5/exec';
 
+// Nem GET nem POST via fetch()/XHR recebem Access-Control-Allow-Origin do
+// Apps Script (testado - as duas formas são bloqueadas por CORS). A saída é
+// JSONP: carregar a resposta como uma tag <script src="...">, que não passa
+// pelo bloqueio de CORS (mesmo mecanismo de carregar uma lib de outro domínio).
+let _jsonpContador = 0;
 function api(acao, payload) {
-  // GET, não POST: é a única forma que a resposta do Apps Script vem com
-  // Access-Control-Allow-Origin (testado - POST é bloqueado por CORS mesmo
-  // com o doPost implementado certinho no servidor). Os dados vão como
-  // parâmetro de URL (?data=...), então cuidado com payloads grandes
-  // (ex: upload de foto em base64) - isso usa outra rota, ver enviarFoto().
-  const dados = encodeURIComponent(JSON.stringify({ acao: acao, payload: payload || {}, token: S.token }));
-  return fetch(APP_URL + '?data=' + dados)
-    .then(function (resp) { return resp.json(); })
-    .then(function (r) {
-      if (r && r.ok) return r.data;
+  return new Promise(function (resolve, reject) {
+    const dados = encodeURIComponent(JSON.stringify({ acao: acao, payload: payload || {}, token: S.token }));
+    const nomeCb = '_aromalabCb' + (_jsonpContador++);
+    const script = document.createElement('script');
+
+    function limpar() {
+      delete window[nomeCb];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[nomeCb] = function (r) {
+      limpar();
+      if (r && r.ok) return resolve(r.data);
       const msg = (r && r.erro) || 'Erro desconhecido';
-      if (msg === 'SESSAO_INVALIDA') { encerrarSessaoLocal(); throw new Error(t('msg_sessao_expirada')); }
-      throw new Error(traduzErro(msg));
-    });
+      if (msg === 'SESSAO_INVALIDA') { encerrarSessaoLocal(); return reject(new Error(t('msg_sessao_expirada'))); }
+      reject(new Error(traduzErro(msg)));
+    };
+    script.onerror = function () { limpar(); reject(new Error('Falha de conexão com o servidor.')); };
+    script.src = APP_URL + '?data=' + dados + '&callback=' + nomeCb;
+    document.body.appendChild(script);
+  });
 }
 
 // ---------- utilitários de UI ----------
