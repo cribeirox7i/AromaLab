@@ -65,6 +65,7 @@
       <nav class="pub-nav">
         <button onclick="mostrarPublico('publicFormulas')" id="pubNavFormulas" data-i18n="nav_formulas">Fórmulas</button>
         <button onclick="mostrarPublico('publicInsumos')" id="pubNavInsumos" data-i18n="nav_insumos">Insumos</button>
+        <button onclick="mostrarPublico('publicGlossario')" id="pubNavGlossario" data-i18n="nav_glossario">Glossário</button>
       </nav>
       <div class="pub-acoes">
         <select id="selIdiomaPublico" class="sel-idioma" onchange="trocarIdiomaPublico(this.value)" title="Idioma / Language">
@@ -163,6 +164,22 @@
         <div class="pub-paginacao" id="pubFormulasPaginacao"></div>
       </main>
     </div>
+
+    <!-- CATÁLOGO PÚBLICO DE GLOSSÁRIO -->
+    <div id="publicGlossario" class="hidden">
+      <main class="pub-main">
+        <div class="pub-catalogo-header">
+          <div>
+            <h2 class="pub-catalogo-titulo">Aroma <em>Glossary</em></h2>
+            <p class="pub-catalogo-desc" data-i18n="pub_glossario_desc">Glossário de termos técnicos da perfumaria -consulte definições.</p>
+          </div>
+        </div>
+        <div class="barra-ferramentas">
+          <input type="search" id="pubBuscaGlossario" data-i18n-ph="ph_busca_termo" placeholder="🔎 Buscar termo…" oninput="renderGlossarioPublico()">
+        </div>
+        <div id="pubListaGlossario" class="glossario-grid"></div>
+      </main>
+    </div>
   </div>
 
   <!-- ============ AUTENTICAÇÃO (overlay modal) ============ -->
@@ -255,28 +272,38 @@
         <span class="brand">AromaLabTec</span>
       </div>
       <nav>
-        <button data-view="viewHome" onclick="mostrarView('viewHome')">
-          <span class="nav-ico">🏠</span><span data-i18n="nav_inicio">Início</span>
-        </button>
-        <button data-view="viewFormulas" onclick="mostrarView('viewFormulas')">
-          <span class="nav-ico">🧪</span><span data-i18n="nav_formulas">Fórmulas</span>
-        </button>
-        <button data-view="viewProducao" onclick="mostrarView('viewProducao')">
-          <span class="nav-ico">📅</span><span data-i18n="nav_producao">Produção</span>
-        </button>
-        <button data-view="viewFornecedores" onclick="mostrarView('viewFornecedores')">
-          <span class="nav-ico">🏭</span><span data-i18n="nav_fornecedores">Fornecedores</span>
-        </button>
+        <div class="nav-grupo">
+          <span class="nav-grupo-rotulo" data-i18n="grupo_lab">Meu Laboratório</span>
+          <div class="nav-grupo-itens">
+            <button data-view="viewHome" onclick="mostrarView('viewHome')">
+              <span class="nav-ico">🏠</span><span data-i18n="nav_inicio">Início</span>
+            </button>
+            <button data-view="viewFormulas" onclick="mostrarView('viewFormulas')">
+              <span class="nav-ico">🧪</span><span data-i18n="nav_formulas">Fórmulas</span>
+            </button>
+            <button data-view="viewProducao" onclick="mostrarView('viewProducao')">
+              <span class="nav-ico">📅</span><span data-i18n="nav_producao">Produção</span>
+            </button>
+            <button data-view="viewFornecedores" onclick="mostrarView('viewFornecedores')">
+              <span class="nav-ico">🏭</span><span data-i18n="nav_fornecedores">Fornecedores</span>
+            </button>
+          </div>
+        </div>
         <span class="nav-sep"></span>
-        <button data-view="viewInsumos" onclick="mostrarView('viewInsumos')">
-          <span class="nav-ico">🌿</span><span data-i18n="nav_insumos">Insumos</span>
-        </button>
-        <button data-view="viewFormulasGerais" onclick="mostrarView('viewFormulasGerais')">
-          <span class="nav-ico">📚</span><span data-i18n="nav_formulas_gerais">Fórmulas gerais</span>
-        </button>
-        <button data-view="viewGlossario" onclick="mostrarView('viewGlossario')">
-          <span class="nav-ico">📖</span><span data-i18n="nav_glossario">Glossário</span>
-        </button>
+        <div class="nav-grupo">
+          <span class="nav-grupo-rotulo" data-i18n="grupo_biblioteca">Biblioteca</span>
+          <div class="nav-grupo-itens">
+            <button data-view="viewInsumos" onclick="mostrarView('viewInsumos')">
+              <span class="nav-ico">🌿</span><span data-i18n="nav_insumos">Insumos</span>
+            </button>
+            <button data-view="viewFormulasGerais" onclick="mostrarView('viewFormulasGerais')">
+              <span class="nav-ico">📚</span><span data-i18n="nav_formulas_gerais">Fórmulas gerais</span>
+            </button>
+            <button data-view="viewGlossario" onclick="mostrarView('viewGlossario')">
+              <span class="nav-ico">📖</span><span data-i18n="nav_glossario">Glossário</span>
+            </button>
+          </div>
+        </div>
       </nav>
       <select id="selIdiomaTop" class="sel-idioma" onchange="trocarIdiomaTop(this.value)" title="Idioma / Language">
         <option value="pt">🇧🇷 PT</option>
@@ -307,29 +334,23 @@
           <p data-i18n="home_sub">AromaLabTec -Laboratório de Perfumaria Técnica</p>
         </div>
         <div class="atalhos">
-          <div class="atalho" onclick="abrirNovaFormula()">
-            <div class="info">
-              <span class="ico">🧪</span><span class="titulo" data-i18n="at_nova">Nova fórmula</span>
-              <span class="sub" data-i18n="at_nova_sub">Criar acorde, essência ou perfume</span>
-            </div>
-          </div>
           <div class="atalho" onclick="mostrarView('viewFormulas')">
             <div class="info">
-              <span class="ico">📜</span><span class="titulo" data-i18n="at_minhas">Minhas fórmulas</span>
+              <span class="ico">🧪</span><span class="titulo" data-i18n="at_minhas">Minhas fórmulas</span>
               <span class="sub" data-i18n="at_minhas_sub">Listar, editar e compor</span>
             </div>
             <div class="qtd" id="qtdFormulas">–</div>
           </div>
-          <div class="atalho" onclick="mostrarView('viewInsumos')">
+          <div class="atalho" onclick="mostrarView('viewProducao')">
             <div class="info">
-              <span class="ico">🌿</span><span class="titulo" data-i18n="nav_insumos">Insumos</span>
-              <span class="sub" data-i18n="at_insumos_sub">Consultar matérias-primas</span>
+              <span class="ico">📅</span><span class="titulo" data-i18n="at_producao">Minhas produções</span>
+              <span class="sub" data-i18n="at_producao_sub">Registrar e acompanhar</span>
             </div>
-            <div class="qtd" id="qtdInsumos">–</div>
+            <div class="qtd" id="qtdProducao">–</div>
           </div>
           <div class="atalho" onclick="mostrarView('viewFornecedores')">
             <div class="info">
-              <span class="ico">🏭</span><span class="titulo" data-i18n="nav_fornecedores">Fornecedores</span>
+              <span class="ico">🏭</span><span class="titulo" data-i18n="at_fornecedores">Meus fornecedores</span>
               <span class="sub" data-i18n="at_forn_sub">Fabricantes e revendedores</span>
             </div>
             <div class="qtd" id="qtdFornecedores">–</div>

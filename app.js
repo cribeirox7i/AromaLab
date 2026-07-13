@@ -56,6 +56,12 @@ const I18N = {
   at_insumos_sub:    { pt: 'Consultar matérias-primas', en: 'Browse raw materials', es: 'Consultar materias primas' },
   at_glos_sub:       { pt: 'Termos da perfumaria técnica', en: 'Technical perfumery terms', es: 'Términos de perfumería técnica' },
   at_forn_sub:       { pt: 'Fabricantes e revendedores', en: 'Manufacturers and resellers', es: 'Fabricantes y revendedores' },
+  at_producao:       { pt: 'Minhas produções', en: 'My productions', es: 'Mis producciones' },
+  at_producao_sub:   { pt: 'Registrar e acompanhar', en: 'Log and track', es: 'Registrar y seguir' },
+  at_fornecedores:   { pt: 'Meus fornecedores', en: 'My suppliers', es: 'Mis proveedores' },
+  grupo_lab:         { pt: 'Meu Laboratório', en: 'My Lab', es: 'Mi Laboratorio' },
+  grupo_biblioteca:  { pt: 'Biblioteca', en: 'Library', es: 'Biblioteca' },
+  pub_glossario_desc:{ pt: 'Glossário de termos técnicos da perfumaria -consulte definições.', en: 'Glossary of technical perfumery terms -browse definitions.', es: 'Glosario de términos técnicos de perfumería -consulta definiciones.' },
   h_recentes:        { pt: 'Fórmulas recentes', en: 'Recent formulas', es: 'Fórmulas recientes' },
   vazio_recentes:    { pt: 'Crie sua primeira fórmula! 🧪', en: 'Create your first formula! 🧪', es: '¡Crea tu primera fórmula! 🧪' },
   insumos_sub:       { pt: 'Catálogo de matérias-primas (somente consulta)', en: 'Raw materials catalog (read only)', es: 'Catálogo de materias primas (solo consulta)' },
@@ -335,7 +341,8 @@ const S = {
   formPagina: 1,
   prodPagina: 1,
   fornPagina: 1,
-  dashCarregado: false
+  dashCarregado: false,
+  producaoCarregada: false
 };
 
 (function () {
@@ -503,6 +510,7 @@ function entrarNoApp() {
 function encerrarSessaoLocal() {
   S.token = ''; S.user = null;
   S.formulas = []; S.producao = []; S.fornecedores = []; S.dashCarregado = false;
+  S.producaoCarregada = false; S.glossario = null;
   localStorage.removeItem('aromalab_token');
   aplicarTema(3);
   $('appShell').classList.add('hidden');
@@ -627,7 +635,7 @@ function carregarDashboard() {
   api('dash.stats').then(function (d) {
     S.dashCarregado = true;
     $('qtdFormulas').textContent = d.totalFormulas;
-    $('qtdInsumos').textContent = d.totalInsumos;
+    $('qtdProducao').textContent = (d.totalProducao != null ? d.totalProducao : '–');
     $('qtdFornecedores').textContent = d.totalFornecedores;
 
     $('listaRecentes').innerHTML = d.recentes.length === 0
@@ -658,22 +666,42 @@ function carregarGlossario() {
   }).catch(function (e) { carregando(false); toast(e.message, 'erro'); });
 }
 
+// Versão pública (sem sessão): reaproveita o mesmo cache S.glossario
+function carregarGlossarioPublico() {
+  if (S.glossario) { renderGlossarioPublico(); return; }
+  carregando(true);
+  api('glossario.publico').then(function (g) {
+    if (g.campos.length) {
+      const k = g.campos[0].key;
+      g.termos.sort(function (a, b) {
+        return String(a[k] || '').localeCompare(String(b[k] || ''), 'pt-BR');
+      });
+    }
+    S.glossario = g;
+    carregando(false);
+    renderGlossarioPublico();
+  }).catch(function (e) { carregando(false); toast(e.message, 'erro'); });
+}
+
 function rotuloGlossario(rotulo) {
   const limpo = String(rotulo).replace(/^glos[_ ]?/i, '').replace(/_/g, ' ').trim().toLowerCase();
   return limpo.charAt(0).toUpperCase() + limpo.slice(1);
 }
 
-function renderGlossario() {
+function renderGlossario() { _renderGlossario('buscaGlossario', 'listaGlossario'); }
+function renderGlossarioPublico() { _renderGlossario('pubBuscaGlossario', 'pubListaGlossario'); }
+
+function _renderGlossario(buscaId, listaId) {
   const g = S.glossario;
   if (!g) return;
-  const busca = ($('buscaGlossario').value || '').toLowerCase();
+  const busca = (($(buscaId) && $(buscaId).value) || '').toLowerCase();
   const campos = g.campos;
   const mostrarRotulos = campos.length > 2;
   const termos = g.termos.filter(function (te) {
     if (!busca) return true;
     return campos.map(function (c) { return te[c.key]; }).join(' ').toLowerCase().indexOf(busca) >= 0;
   });
-  $('listaGlossario').innerHTML = (campos.length === 0 || termos.length === 0)
+  $(listaId).innerHTML = (campos.length === 0 || termos.length === 0)
     ? '<p class="vazio" style="grid-column:1/-1"><span class="ico">📖</span>' + t('vazio_termos') + '</p>'
     : termos.map(function (te) {
         const titulo = te[campos[0].key];
@@ -1127,7 +1155,7 @@ function diluidoresDisponiveis() {
 }
 
 function carregarProducao() {
-  if (S.producao.length) { renderProducao(); return; }
+  if (S.producaoCarregada) { renderProducao(); return; }
   carregando(true);
   const garantirFormulas = S.formulas.length ? Promise.resolve() :
     api('formulas.listar').then(function (l) { S.formulas = l; });
@@ -1138,6 +1166,7 @@ function carregarProducao() {
     .then(function (lista) {
       lista.sort(function (a, b) { return String(b.prod_dat).localeCompare(String(a.prod_dat)); });
       S.producao = lista;
+      S.producaoCarregada = true;
       carregando(false);
       renderProducao();
     })
@@ -1250,7 +1279,7 @@ function salvarProducao(prodId) {
   };
   fecharModal(); carregando(true);
   api('producao.salvar', payload)
-    .then(function () { carregando(false); toast(t('msg_producao_salva')); S.producao = []; carregarProducao(); })
+    .then(function () { carregando(false); toast(t('msg_producao_salva')); S.producao = []; S.producaoCarregada = false; carregarProducao(); })
     .catch(function (e) { carregando(false); toast(e.message, 'erro'); });
 }
 
@@ -1270,7 +1299,7 @@ function confirmarExclusaoProducao(prodId) {
 function excluirProducao(prodId) {
   fecharModal(); carregando(true);
   api('producao.excluir', { prod_id: prodId })
-    .then(function () { carregando(false); toast(t('msg_producao_excluida')); S.producao = []; carregarProducao(); })
+    .then(function () { carregando(false); toast(t('msg_producao_excluida')); S.producao = []; S.producaoCarregada = false; carregarProducao(); })
     .catch(function (e) { carregando(false); toast(e.message, 'erro'); });
 }
 
@@ -1460,7 +1489,7 @@ const PUB = {
 };
 
 function mostrarPublico(secao) {
-  ['publicHome', 'publicInsumos', 'publicFormulas'].forEach(function (id) {
+  ['publicHome', 'publicInsumos', 'publicFormulas', 'publicGlossario'].forEach(function (id) {
     var el = $(id);
     if (el) el.classList.toggle('hidden', id !== secao);
   });
@@ -1469,11 +1498,16 @@ function mostrarPublico(secao) {
   if (navIns) navIns.classList.toggle('ativo', secao === 'publicInsumos');
   var navForm = $('pubNavFormulas');
   if (navForm) navForm.classList.toggle('ativo', secao === 'publicFormulas');
+  var navGlos = $('pubNavGlossario');
+  if (navGlos) navGlos.classList.toggle('ativo', secao === 'publicGlossario');
   if (secao === 'publicInsumos') {
     carregarCatalogoPublico(1);
   }
   if (secao === 'publicFormulas') {
     _carregarFormulasGeral(PUB_FORM, 1);
+  }
+  if (secao === 'publicGlossario') {
+    carregarGlossarioPublico();
   }
 }
 
