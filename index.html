@@ -3,84 +3,648 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
-  <title>AromaLab</title>
+  <title>AromaLabTec</title>
   <meta name="theme-color" content="#1b1108">
-  <meta name="description" content="AromaLab — Estúdio de Perfumaria Técnica">
+  <meta name="description" content="AromaLabTec - Laboratorio de Perfumaria Tecnica">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23eaf6fb'/%3E%3Cstop offset='.55' stop-color='%23a9d6e8'/%3E%3Cstop offset='1' stop-color='%236fb3cf'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='90' fill='%230b0806'/%3E%3Cline x1='256' y1='392' x2='130' y2='470' stroke='%238a95a0' stroke-width='13' stroke-linecap='round'/%3E%3Cline x1='256' y1='392' x2='382' y2='470' stroke='%238a95a0' stroke-width='13' stroke-linecap='round'/%3E%3Cellipse cx='256' cy='332' rx='100' ry='10' fill='none' stroke='%238a95a0' stroke-width='9'/%3E%3Ccircle cx='256' cy='272' r='94' fill='url(%23g)' stroke='%234d8ba8' stroke-width='7'/%3E%3Crect x='230' y='152' width='52' height='72' rx='10' fill='url(%23g)' stroke='%234d8ba8' stroke-width='7'/%3E%3Crect x='220' y='208' width='72' height='18' rx='4' fill='%237fae5a'/%3E%3Crect x='220' y='128' width='72' height='26' rx='6' fill='%235a4a3a'/%3E%3C/svg%3E">
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-192.png">
-
-  <!-- iOS: comportamento de app em tela cheia -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="AromaLab">
   <meta name="mobile-web-app-capable" content="yes">
 
-  <style>
-    html, body { margin: 0; padding: 0; height: 100%; background: #0b0806; overflow: hidden; }
-    #splash {
-      position: fixed; inset: 0; z-index: 10;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
-      background: radial-gradient(800px 400px at 70% -10%, #1c130a 0%, #0b0806 60%);
-      color: #a08e76; font-family: Georgia, 'Times New Roman', serif;
-      transition: opacity .45s ease;
-    }
-    #splash.hide { opacity: 0; pointer-events: none; }
-    #splash .frasco { font-size: 56px; animation: flutua 1.6s ease-in-out infinite; }
-    #splash .marca { font-size: 30px; color: #e0b878; letter-spacing: 1px; }
-    #splash .leg { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; }
-    @keyframes flutua { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-10px) } }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Tela de abertura enquanto o app carrega -->
-  <div id="splash">
-    <span class="frasco">⚗️</span>
-    <span class="marca">AromaLab</span>
-    <span class="leg">Estúdio de Perfumaria</span>
+  <!-- ícone reutilizável (alambique com tripé) -->
+  <svg id="svgDefs" style="display:none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="fraskoCorpo" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#eaf6fb"/>
+        <stop offset=".55" stop-color="#a9d6e8"/>
+        <stop offset="1" stop-color="#6fb3cf"/>
+      </linearGradient>
+    </defs>
+    <symbol id="sym-frasco" viewBox="0 0 512 512">
+      <!-- tripé -->
+      <line x1="256" y1="392" x2="130" y2="470" stroke="#8a95a0" stroke-width="13" stroke-linecap="round"/>
+      <line x1="256" y1="392" x2="382" y2="470" stroke="#8a95a0" stroke-width="13" stroke-linecap="round"/>
+      <!-- anel de suporte -->
+      <ellipse cx="256" cy="332" rx="100" ry="10" fill="none" stroke="#8a95a0" stroke-width="9"/>
+      <!-- corpo do alambique -->
+      <circle cx="256" cy="272" r="94" fill="url(#fraskoCorpo)" stroke="#4d8ba8" stroke-width="7"/>
+      <!-- gargalo -->
+      <rect x="230" y="152" width="52" height="72" rx="10" fill="url(#fraskoCorpo)" stroke="#4d8ba8" stroke-width="7"/>
+      <!-- faixa verde -->
+      <rect x="220" y="208" width="72" height="18" rx="4" fill="#7fae5a"/>
+      <!-- rolha -->
+      <rect x="220" y="128" width="72" height="26" rx="6" fill="#5a4a3a"/>
+    </symbol>
+  </svg>
+
+  <!-- ============ LOADING ============ -->
+  <div id="loading">
+    <span class="frasco"><svg class="icone-svg" viewBox="0 0 512 512"><use href="#sym-frasco"/></svg></span>
+    <p data-i18n="carregando">Formulando…</p>
   </div>
 
-  <!-- Esta tela é só uma splash: o app roda direto na URL do Apps Script.
-       Já tentamos hospedar o app inteiro aqui (estático) conversando com o
-       GAS via fetch (POST e GET) e depois via JSONP - nenhuma sobreviveu
-       igual em todo navegador: fetch é bloqueado por CORS (Apps Script não
-       manda Access-Control-Allow-Origin) e JSONP é bloqueado por proteção
-       de rastreamento (Edge Tracking Prevention e afins detectam o padrão
-       ?callback= e barram a chamada). O redirect de topo é a única forma
-       que funcionou de forma confiável em todos os testes. -->
+  <!-- ============ TOAST ============ -->
+  <div id="toast"></div>
 
-  <script>
-    /* =======================================================================
-     *  CONFIGURAÇÃO — cole aqui a URL /exec da sua implantação do Apps Script.
-     *  (Implantar → Gerenciar implantações → copie a URL terminada em /exec)
-     * ======================================================================= */
-    var APP_URL = 'https://script.google.com/macros/s/AKfycbzwfDY7VNTpaAL93DNj-WR-kqP2lvpnI7DPk5nZQXHEsgf-3iTx9VDr9yKzcdr7w_TH/exec';
+  <!-- ============ LANDING PAGE PÚBLICA ============ -->
+  <div id="publicShell" class="hidden">
+    <header class="pub-topbar">
+      <div class="pub-logo" onclick="mostrarPublico('publicHome')">
+        <svg class="pub-icone-svg" viewBox="0 0 512 512"><use href="#sym-frasco"/></svg>
+        <span class="brand">AromaLabTec</span>
+      </div>
+      <nav class="pub-nav">
+        <button onclick="mostrarPublico('publicFormulas')" id="pubNavFormulas" data-i18n="nav_formulas">Fórmulas</button>
+        <button onclick="mostrarPublico('publicInsumos')" id="pubNavInsumos" data-i18n="nav_insumos">Insumos</button>
+      </nav>
+      <div class="pub-acoes">
+        <select id="selIdiomaPublico" class="sel-idioma" onchange="trocarIdiomaPublico(this.value)" title="Idioma / Language">
+          <option value="pt">🇧🇷 PT</option>
+          <option value="en">🇺🇸 EN</option>
+          <option value="es">🇪🇸 ES</option>
+        </select>
+        <button class="btn btn-fantasma btn-mini" onclick="abrirAuth('viewLogin')" data-i18n="btn_entrar">Entrar</button>
+        <button class="btn btn-acao btn-mini" onclick="abrirAuth('viewSignup')" data-i18n="lnk_criar_conta">Criar conta</button>
+      </div>
+    </header>
+
+    <!-- HOME PÚBLICA: hero + carrossel -->
+    <div id="publicHome">
+      <section class="pub-hero">
+        <div class="pub-hero-texto">
+          <h1 class="pub-titulo">Aroma<em>LabTec</em></h1>
+          <p class="pub-subtitulo" data-i18n="pub_hero_sub">Laboratório de Perfumaria Técnica</p>
+          <ul class="pub-beneficios">
+            <li><span class="pub-beneficio-ico">✓</span><span data-i18n="pub_beneficio_1">Consulte a biblioteca de materiais, fórmulas e fragrâncias de todo o mundo</span></li>
+            <li><span class="pub-beneficio-ico">✓</span><span data-i18n="pub_beneficio_2">Crie fórmulas personalizadas, com motor de cálculo detalhado e preciso</span></li>
+            <li><span class="pub-beneficio-ico">✓</span><span data-i18n="pub_beneficio_3">Controle a produção de suas criações</span></li>
+            <li><span class="pub-beneficio-ico">✓</span><span data-i18n="pub_beneficio_4">Gerencie fornecedores e seu inventário de produtos</span></li>
+          </ul>
+          <div class="pub-hero-btns">
+            <button class="btn btn-acao" onclick="abrirAuth('viewSignup')" data-i18n="pub_comecar">Começar gratuitamente</button>
+          </div>
+        </div>
+        <div class="pub-hero-visual">
+          <div class="carrossel" id="carrossel">
+            <div class="carrossel-trilho" id="carrosselTrilho"></div>
+            <div class="carrossel-dots" id="carrosselDots"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- CATÁLOGO PÚBLICO DE INSUMOS -->
+    <div id="publicInsumos" class="hidden">
+      <main class="pub-main">
+        <div class="pub-catalogo-header">
+          <div>
+            <h2 class="pub-catalogo-titulo">Aroma <em>Materials</em></h2>
+            <p class="pub-catalogo-desc" data-i18n="pub_catalogo_desc">Explore nossa biblioteca de matérias-primas aromáticas -naturais e sintéticas.</p>
+          </div>
+        </div>
+        <div class="pub-barra">
+          <div class="pub-busca-wrap">
+            <span class="pub-busca-ico">🔎</span>
+            <input type="search" id="pubBuscaInsumo" data-i18n-ph="ph_busca_insumo" placeholder="🔎 Buscar por nome, CAS, tipo…" oninput="buscarInsumosPublicos()">
+          </div>
+          <select id="pubFiltroTipo" class="pub-filtro-estreito" onchange="buscarInsumosPublicos()">
+            <option value="" data-i18n="opt_todos_tipos">Todos os tipos</option>
+            <option>Absoluto</option><option>Corante</option><option>Essência</option>
+            <option>Molécula</option><option>Óleo Essencial</option><option>Carreador</option>
+          </select>
+          <div class="pub-paginacao" id="pubPaginacao"></div>
+        </div>
+        <div class="pub-catalogo-layout">
+          <div class="pub-catalogo-lista" id="pubListaInsumos">
+            <p class="vazio" style="padding:40px" data-i18n="carregando">Formulando…</p>
+          </div>
+          <div class="pub-detalhe-box" id="pubDetalheBox">
+            <div id="pubDetalheConteudo" class="pub-detalhe-vazio">
+              <span class="pub-detalhe-hint" data-i18n="pub_hint_hover">Passe o mouse sobre um insumo para ver os detalhes</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- BIBLIOTECA PÚBLICA DE FÓRMULAS -->
+    <div id="publicFormulas" class="hidden">
+      <main class="pub-main">
+        <div class="pub-catalogo-header">
+          <div>
+            <h2 class="pub-catalogo-titulo">Aroma <em>Formulas</em></h2>
+            <p class="pub-catalogo-desc" data-i18n="pub_formulas_desc">Biblioteca de fórmulas públicas -consulte composições prontas.</p>
+          </div>
+        </div>
+        <div class="barra-ferramentas">
+          <input type="search" id="pubBuscaFormula" data-i18n-ph="ph_busca_formula" placeholder="🔎 Buscar fórmula…" oninput="buscarFormulasPublicas()">
+          <select id="pubFiltroTipoFormula" class="filtro-estreito" onchange="buscarFormulasPublicas()">
+            <option value="" data-i18n="opt_todos_tipos">Todos os tipos</option>
+            <option>Acorde</option><option>Essência</option><option>Perfume</option>
+          </select>
+        </div>
+        <div class="pub-catalogo-layout layout-largo">
+          <div id="pubListaFormulas"></div>
+          <div class="pub-detalhe-box" id="pubFormulaDetalheBox">
+            <div id="pubFormulaDetalheConteudo" class="pub-detalhe-vazio">
+              <span class="pub-detalhe-hint" data-i18n="pub_hint_click_formula">Clique em uma fórmula para ver a composição</span>
+            </div>
+          </div>
+        </div>
+        <div class="pub-paginacao" id="pubFormulasPaginacao"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ============ AUTENTICAÇÃO (overlay modal) ============ -->
+  <div id="authOverlay" class="hidden" onclick="if(event.target===this)fecharAuthOverlay()">
+  <div id="authShell">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <svg class="icone-svg auth-svg" viewBox="0 0 512 512"><use href="#sym-frasco"/></svg>
+        <div class="brand">AromaLabTec<small data-i18n="brand_sub">Laboratório de Perfumaria Técnica</small></div>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="viewLogin">
+        <div class="campo">
+          <label data-i18n="lbl_email">E-mail</label>
+          <input type="email" id="loginEmail" placeholder="voce@exemplo.com" autocomplete="username">
+        </div>
+        <div class="campo">
+          <label data-i18n="lbl_senha">Senha</label>
+          <div class="campo-senha">
+            <input type="password" id="loginSenha" placeholder="••••••••" autocomplete="current-password">
+            <button type="button" class="olho" onclick="alternarSenha('loginSenha', this)">👁</button>
+          </div>
+        </div>
+        <button class="btn btn-primario" onclick="acaoLogin()" data-i18n="btn_entrar">Entrar</button>
+        <div class="auth-links">
+          <a onclick="mostrarAuth('viewForgot')" data-i18n="lnk_esqueci">Esqueci minha senha</a>
+          <div class="separador" data-i18n="sep_novo">novo por aqui?</div>
+          <a onclick="mostrarAuth('viewSignup')"><b data-i18n="lnk_criar_conta">Criar minha conta</b></a>
+        </div>
+      </div>
+
+      <!-- SIGN UP -->
+      <div id="viewSignup" class="hidden">
+        <div class="campo">
+          <label data-i18n="lbl_nome">Nome *</label>
+          <input type="text" id="suNome">
+        </div>
+        <div class="campo">
+          <label data-i18n="lbl_email_req">E-mail *</label>
+          <input type="email" id="suEmail" placeholder="voce@exemplo.com">
+        </div>
+        <div class="campo">
+          <label data-i18n="lbl_senha_req">Senha *</label>
+          <div class="campo-senha">
+            <input type="password" id="suSenha" placeholder="••••••••" oninput="renderForcaSenha('suSenha','forcaSuSenha')">
+            <button type="button" class="olho" onclick="alternarSenha('suSenha', this)">👁</button>
+          </div>
+          <div id="forcaSuSenha" class="forca-senha-wrap"></div>
+          <p class="hint-senha" data-i18n="hint_senha">Mín. 8 caracteres, letra maiúscula, minúscula e número.</p>
+        </div>
+        <button class="btn btn-primario" onclick="acaoSignup()" data-i18n="btn_cadastrar">Cadastrar e receber código</button>
+        <div class="auth-links"><a onclick="mostrarAuth('viewLogin')" data-i18n="lnk_voltar_login">← Voltar ao login</a></div>
+      </div>
+
+      <!-- VERIFICAÇÃO DO TOKEN -->
+      <div id="viewVerify" class="hidden">
+        <p style="text-align:center;color:var(--muted);margin-bottom:16px">
+          <span data-i18n="verify_intro">Enviamos um código de 6 dígitos para</span><br>
+          <b id="verifyEmailLabel" style="color:var(--gold)"></b>
+        </p>
+        <div class="campo">
+          <input type="text" id="verifyToken" class="codigo-token" maxlength="6" inputmode="numeric" placeholder="······">
+        </div>
+        <button class="btn btn-primario" onclick="acaoVerificar()" data-i18n="btn_confirmar">Confirmar código</button>
+        <div class="auth-links"><a onclick="mostrarAuth('viewSignup')" data-i18n="lnk_corrigir">← Corrigir dados</a></div>
+      </div>
+
+      <!-- ESQUECI MINHA SENHA -->
+      <div id="viewForgot" class="hidden">
+        <p style="text-align:center;color:var(--muted);margin-bottom:16px" data-i18n="forgot_intro">
+          Informe seu e-mail e enviaremos uma senha temporária.
+        </p>
+        <div class="campo">
+          <label data-i18n="lbl_email">E-mail</label>
+          <input type="email" id="forgotEmail" placeholder="voce@exemplo.com">
+        </div>
+        <button class="btn btn-primario" onclick="acaoEsqueci()" data-i18n="btn_enviar_temp">Enviar senha temporária</button>
+        <div class="auth-links"><a onclick="mostrarAuth('viewLogin')" data-i18n="lnk_voltar_login">← Voltar ao login</a></div>
+      </div>
+    </div>
+  </div>
+  </div><!-- /authOverlay -->
+
+  <!-- ============ APLICAÇÃO ============ -->
+  <div id="appShell" class="hidden">
+    <header class="topbar">
+      <div class="logo" onclick="mostrarView('viewHome')">
+        <svg class="icone-svg topbar-svg" viewBox="0 0 512 512"><use href="#sym-frasco"/></svg>
+        <span class="brand">AromaLabTec</span>
+      </div>
+      <nav>
+        <button data-view="viewHome" onclick="mostrarView('viewHome')">
+          <span class="nav-ico">🏠</span><span data-i18n="nav_inicio">Início</span>
+        </button>
+        <button data-view="viewFormulas" onclick="mostrarView('viewFormulas')">
+          <span class="nav-ico">🧪</span><span data-i18n="nav_formulas">Fórmulas</span>
+        </button>
+        <button data-view="viewProducao" onclick="mostrarView('viewProducao')">
+          <span class="nav-ico">📅</span><span data-i18n="nav_producao">Produção</span>
+        </button>
+        <button data-view="viewFornecedores" onclick="mostrarView('viewFornecedores')">
+          <span class="nav-ico">🏭</span><span data-i18n="nav_fornecedores">Fornecedores</span>
+        </button>
+        <span class="nav-sep"></span>
+        <button data-view="viewInsumos" onclick="mostrarView('viewInsumos')">
+          <span class="nav-ico">🌿</span><span data-i18n="nav_insumos">Insumos</span>
+        </button>
+        <button data-view="viewFormulasGerais" onclick="mostrarView('viewFormulasGerais')">
+          <span class="nav-ico">📚</span><span data-i18n="nav_formulas_gerais">Fórmulas gerais</span>
+        </button>
+        <button data-view="viewGlossario" onclick="mostrarView('viewGlossario')">
+          <span class="nav-ico">📖</span><span data-i18n="nav_glossario">Glossário</span>
+        </button>
+      </nav>
+      <select id="selIdiomaTop" class="sel-idioma" onchange="trocarIdiomaTop(this.value)" title="Idioma / Language">
+        <option value="pt">🇧🇷 PT</option>
+        <option value="en">🇺🇸 EN</option>
+        <option value="es">🇪🇸 ES</option>
+      </select>
+      <!-- Avatar com menu suspenso -->
+      <div class="avatar-wrap" id="avatarWrap">
+        <img id="avatarTop" class="avatar-top" src="" alt="perfil" onclick="toggleMenuAvatar()">
+        <div id="menuAvatar" class="menu-avatar hidden">
+          <button onclick="fecharMenuAvatar();mostrarView('viewConfiguracoes')">
+            ⚙️ <span data-i18n="nav_perfil">Perfil</span>
+          </button>
+          <button onclick="fecharMenuAvatar();mostrarView('viewSeguranca')">
+            🔒 <span data-i18n="menu_seguranca">Segurança</span>
+          </button>
+          <div class="menu-avatar-sep"></div>
+          <button class="menu-sair" onclick="fecharMenuAvatar();acaoLogout()" data-i18n="btn_sair">⏻ Sair da conta</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ============ HOME / DASHBOARD ============ -->
+      <section id="viewHome" class="view hidden">
+        <div class="view-titulo">
+          <h2 id="saudacao">Bem-vindo</h2>
+          <p data-i18n="home_sub">AromaLabTec -Laboratório de Perfumaria Técnica</p>
+        </div>
+        <div class="atalhos">
+          <div class="atalho" onclick="abrirNovaFormula()">
+            <div class="info">
+              <span class="ico">🧪</span><span class="titulo" data-i18n="at_nova">Nova fórmula</span>
+              <span class="sub" data-i18n="at_nova_sub">Criar acorde, essência ou perfume</span>
+            </div>
+          </div>
+          <div class="atalho" onclick="mostrarView('viewFormulas')">
+            <div class="info">
+              <span class="ico">📜</span><span class="titulo" data-i18n="at_minhas">Minhas fórmulas</span>
+              <span class="sub" data-i18n="at_minhas_sub">Listar, editar e compor</span>
+            </div>
+            <div class="qtd" id="qtdFormulas">–</div>
+          </div>
+          <div class="atalho" onclick="mostrarView('viewInsumos')">
+            <div class="info">
+              <span class="ico">🌿</span><span class="titulo" data-i18n="nav_insumos">Insumos</span>
+              <span class="sub" data-i18n="at_insumos_sub">Consultar matérias-primas</span>
+            </div>
+            <div class="qtd" id="qtdInsumos">–</div>
+          </div>
+          <div class="atalho" onclick="mostrarView('viewFornecedores')">
+            <div class="info">
+              <span class="ico">🏭</span><span class="titulo" data-i18n="nav_fornecedores">Fornecedores</span>
+              <span class="sub" data-i18n="at_forn_sub">Fabricantes e revendedores</span>
+            </div>
+            <div class="qtd" id="qtdFornecedores">–</div>
+          </div>
+        </div>
+        <div class="painel">
+          <h3 data-i18n="h_recentes">Fórmulas recentes</h3>
+          <div id="listaRecentes"></div>
+        </div>
+      </section>
+
+      <!-- ============ INSUMOS (catálogo logado) ============ -->
+      <section id="viewInsumos" class="view hidden">
+        <div class="view-titulo">
+          <h2 data-i18n="nav_insumos">Insumos</h2>
+          <p data-i18n="insumos_sub">Catálogo de matérias-primas -somente consulta</p>
+        </div>
+        <div class="barra-ferramentas">
+          <input type="search" id="buscaInsumo" data-i18n-ph="ph_busca_insumo" placeholder="🔎 Buscar por nome, CAS, tipo…" oninput="renderInsumos()">
+          <select id="filtroTipoInsumo" class="filtro-estreito" onchange="renderInsumos()">
+            <option value="" data-i18n="opt_todos_tipos">Todos os tipos</option>
+            <option>Absoluto</option><option>Corante</option><option>Essência</option>
+            <option>Molécula</option><option>Óleo Essencial</option><option>Carreador</option>
+          </select>
+          <select id="insPorPagina" class="sel-por-pagina" onchange="renderInsumos()" title="Itens por página">
+            <option value="10">10 / pág.</option>
+            <option value="15" selected>15 / pág.</option>
+            <option value="20">20 / pág.</option>
+          </select>
+          <div class="ins-paginacao" id="insPaginacao"></div>
+        </div>
+        <div class="pub-catalogo-layout">
+          <div id="listaInsumos"></div>
+          <div class="pub-detalhe-box" id="insDetalheBox">
+            <div id="insDetalheConteudo" class="pub-detalhe-vazio">
+              <span class="pub-detalhe-hint" data-i18n="pub_hint_hover">Passe o mouse sobre um insumo para ver os detalhes</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ FÓRMULAS GERAIS (biblioteca pública, consulta) ============ -->
+      <section id="viewFormulasGerais" class="view hidden">
+        <div class="view-titulo">
+          <h2 data-i18n="nav_formulas_gerais">Fórmulas gerais</h2>
+          <p data-i18n="formulas_gerais_sub">Biblioteca pública de fórmulas -somente consulta</p>
+        </div>
+        <div class="barra-ferramentas">
+          <input type="search" id="buscaFormulaGeral" data-i18n-ph="ph_busca_formula" placeholder="🔎 Buscar fórmula…" oninput="buscarFormulasGerais()">
+          <select id="filtroTipoFormulaGeral" class="filtro-estreito" onchange="buscarFormulasGerais()">
+            <option value="" data-i18n="opt_todos_tipos">Todos os tipos</option>
+            <option>Acorde</option><option>Essência</option><option>Perfume</option>
+          </select>
+        </div>
+        <div class="pub-catalogo-layout layout-largo">
+          <div id="listaFormulasGerais"></div>
+          <div class="pub-detalhe-box" id="formGeralDetalheBox">
+            <div id="formGeralDetalheConteudo" class="pub-detalhe-vazio">
+              <span class="pub-detalhe-hint" data-i18n="pub_hint_click_formula">Clique em uma fórmula para ver a composição</span>
+            </div>
+          </div>
+        </div>
+        <div class="pub-paginacao" id="formGeraisPaginacao" style="margin-top:16px"></div>
+      </section>
+
+      <!-- ============ GLOSSÁRIO ============ -->
+      <section id="viewGlossario" class="view hidden">
+        <div class="view-titulo">
+          <h2 data-i18n="nav_glossario">Glossário</h2>
+          <p data-i18n="glossario_sub">Termos da perfumaria técnica -consulta</p>
+        </div>
+        <div class="barra-ferramentas">
+          <input type="search" id="buscaGlossario" data-i18n-ph="ph_busca_termo" placeholder="🔎 Buscar termo…" oninput="renderGlossario()">
+        </div>
+        <div id="listaGlossario" class="glossario-grid"></div>
+      </section>
+
+      <!-- ============ FÓRMULAS (listagem) ============ -->
+      <section id="viewFormulas" class="view hidden">
+        <div class="view-titulo">
+          <h2 data-i18n="nav_formulas">Fórmulas</h2>
+          <button class="btn btn-acao" onclick="abrirNovaFormula()" data-i18n="btn_nova_formula">＋ Nova fórmula</button>
+        </div>
+        <p class="nota" style="margin-bottom:10px" data-i18n="formulas_sub">Suas fórmulas e criações aromáticas.</p>
+        <div class="barra-ferramentas">
+          <input type="search" id="buscaFormula" data-i18n-ph="ph_busca_formula" placeholder="🔎 Buscar fórmula…" oninput="renderFormulas()">
+          <select id="filtroTipoFormula" class="filtro-estreito" onchange="renderFormulas()">
+            <option value="" data-i18n="opt_todos_tipos">Todos os tipos</option>
+            <option>Acorde</option><option>Essência</option><option>Perfume</option>
+          </select>
+          <select id="formPorPagina" class="sel-por-pagina" onchange="renderFormulas()" title="Itens por página">
+            <option value="10">10 / pág.</option>
+            <option value="15" selected>15 / pág.</option>
+            <option value="20">20 / pág.</option>
+          </select>
+          <div class="ins-paginacao" id="formPaginacao"></div>
+        </div>
+        <p class="nota" style="margin-bottom:10px" data-i18n="dica_clique">💡 Clique em uma fórmula para abrir seus insumos.</p>
+        <div class="tabela-wrap">
+          <table>
+            <thead><tr>
+              <th style="width:24%;min-width:170px" data-i18n="th_nome">Nome</th>
+              <th data-i18n="th_tipo">Tipo</th>
+              <th style="width:42%" data-i18n="th_desc">Descrição</th>
+              <th style="width:130px"></th>
+            </tr></thead>
+            <tbody id="tbodyFormulas"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ EDITOR DE FÓRMULA ============ -->
+      <section id="viewFormulaEdit" class="view hidden">
+        <div class="view-titulo">
+          <h2 id="tituloFormulaEdit">Nova fórmula</h2>
+          <button class="btn btn-fantasma" onclick="mostrarView('viewFormulas')" data-i18n="btn_voltar">← Voltar à lista</button>
+        </div>
+        <div class="painel">
+          <div class="linha-form-flex">
+            <div class="campo" style="flex:1;max-width:420px">
+              <label data-i18n="lbl_nome_formula">Nome da fórmula *</label>
+              <input type="text" id="feNome">
+            </div>
+            <div class="campo" style="flex:0 0 200px">
+              <label data-i18n="lbl_tipo">Tipo</label>
+              <select id="feTip">
+                <option value="">-</option>
+                <option>Acorde</option><option>Essência</option><option>Perfume</option>
+              </select>
+            </div>
+          </div>
+          <div class="linha-form-flex linha-form-desc">
+            <div class="campo" style="flex:1;max-width:600px">
+              <label data-i18n="lbl_desc">Descrição</label>
+              <textarea id="feDesc" data-i18n-ph="ph_desc" placeholder="Notas, inspiração, observações…"></textarea>
+            </div>
+            <button class="btn btn-acao" onclick="salvarFormula()" data-i18n="btn_salvar_formula">💾 Salvar fórmula</button>
+          </div>
+        </div>
+        <div class="painel" id="painelItensFormula" style="margin-top:18px">
+          <div class="view-titulo" style="margin-bottom:14px">
+            <h3 style="margin:0" data-i18n="h_insumos_formula">Insumos da fórmula</h3>
+            <button class="btn btn-acao btn-mini" id="btnNovoItem" onclick="abrirModalItem(null)" data-i18n="btn_add_insumo">＋ Adicionar insumo</button>
+          </div>
+          <div class="tabela-wrap">
+            <table>
+              <thead><tr>
+                <th class="col-nome" data-i18n="th_insumo">Insumo</th><th data-i18n="th_tipo">Tipo</th>
+                <th data-i18n="th_composicao">Composição</th><th data-i18n="th_extrato">Extrato</th>
+                <th class="num" data-i18n="th_diluicao">Diluição %</th><th data-i18n="th_unid">Unid.</th>
+                <th class="num" data-i18n="th_qtde">Qtde</th><th class="num" data-i18n="th_qtde_ml">Qtde ml</th>
+                <th class="num">%</th><th class="num">ppm</th><th></th>
+              </tr></thead>
+              <tbody id="tbodyItensFormula"></tbody>
+              <tfoot id="tfootItensFormula"></tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PRODUÇÃO ============ -->
+      <section id="viewProducao" class="view hidden">
+        <div class="view-titulo">
+          <h2 data-i18n="nav_producao">Produção</h2>
+          <button class="btn btn-acao" onclick="abrirModalProducao(null)" data-i18n="btn_nova_producao">＋ Nova produção</button>
+        </div>
+        <p class="nota" style="margin-bottom:10px" data-i18n="producao_sub">Agenda de produção das suas fórmulas</p>
+        <div class="barra-ferramentas">
+          <input type="search" id="buscaProducao" data-i18n-ph="ph_busca_producao" placeholder="🔎 Buscar produção…" oninput="renderProducao()">
+          <select id="prodPorPagina" class="sel-por-pagina" onchange="renderProducao()" title="Itens por página">
+            <option value="10">10 / pág.</option>
+            <option value="15" selected>15 / pág.</option>
+            <option value="20">20 / pág.</option>
+          </select>
+          <div class="ins-paginacao" id="prodPaginacao"></div>
+        </div>
+        <div class="tabela-wrap">
+          <table>
+            <thead><tr>
+              <th data-i18n="th_data">Data</th>
+              <th class="col-nome" data-i18n="th_formula">Fórmula</th>
+              <th class="num" data-i18n="th_perc_diluicao">% Dil.</th>
+              <th class="num" data-i18n="th_vol_ml">Vol. ml</th>
+              <th data-i18n="th_perfil">Perfil</th>
+              <th data-i18n="th_nota">Nota</th>
+              <th style="width:110px"></th>
+            </tr></thead>
+            <tbody id="tbodyProducao"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ FORNECEDORES ============ -->
+      <section id="viewFornecedores" class="view hidden">
+        <div class="view-titulo">
+          <h2 data-i18n="nav_fornecedores">Fornecedores</h2>
+          <button class="btn btn-acao" onclick="abrirModalFornecedor(null)" data-i18n="btn_novo_fornecedor">＋ Novo fornecedor</button>
+        </div>
+        <p class="nota" style="margin-bottom:10px" data-i18n="fornecedores_sub">Seus fornecedores e fabricantes</p>
+        <div class="barra-ferramentas">
+          <input type="search" id="buscaFornecedor" data-i18n-ph="ph_busca_fornecedor" placeholder="🔎 Buscar fornecedor…" oninput="renderFornecedores()">
+          <select id="fornPorPagina" class="sel-por-pagina" onchange="renderFornecedores()" title="Itens por página">
+            <option value="10">10 / pág.</option>
+            <option value="15" selected>15 / pág.</option>
+            <option value="20">20 / pág.</option>
+          </select>
+          <div class="ins-paginacao" id="fornPaginacao"></div>
+        </div>
+        <div class="tabela-wrap">
+          <table>
+            <thead><tr>
+              <th class="col-nome" data-i18n="th_nome">Nome</th>
+              <th data-i18n="th_tipo">Tipo</th>
+              <th data-i18n="th_forn_fabricante">Fabricante</th>
+              <th data-i18n="th_forn_telefone">Telefone</th>
+              <th data-i18n="th_forn_url">Site</th>
+              <th data-i18n="th_nota">Nota</th>
+              <th style="width:110px"></th>
+            </tr></thead>
+            <tbody id="tbodyFornecedores"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ CONFIGURAÇÕES (dados pessoais + tema + foto) ============ -->
+      <section id="viewConfiguracoes" class="view hidden">
+        <div class="view-titulo"><h2 data-i18n="nav_perfil">Perfil</h2></div>
+        <div class="painel painel-foto-h">
+          <img id="avatarGrande" class="avatar-grande" src="" alt="foto de perfil">
+          <div class="painel-foto-info">
+            <h3 data-i18n="h_foto">Foto de perfil</h3>
+            <input type="file" id="inputFoto" accept="image/*" class="hidden" onchange="enviarFoto(this)">
+            <button class="btn btn-fantasma" onclick="document.getElementById('inputFoto').click()" data-i18n="btn_foto">📷 Alterar foto</button>
+          </div>
+        </div>
+        <div class="painel">
+          <h3 data-i18n="h_dados">Dados pessoais</h3>
+          <div class="campo">
+            <label data-i18n="lbl_nome_s">Nome</label>
+            <input type="text" id="pfNome">
+          </div>
+          <div class="campo">
+            <label data-i18n="lbl_email">E-mail</label>
+            <input type="email" id="pfEmail">
+          </div>
+          <div class="campo">
+            <label data-i18n="lbl_senha_email">Senha atual (obrigatória para trocar o e-mail)</label>
+            <div class="campo-senha">
+              <input type="password" id="pfSenhaAtualEmail" placeholder="••••••••">
+              <button type="button" class="olho" onclick="alternarSenha('pfSenhaAtualEmail', this)">👁</button>
+            </div>
+          </div>
+          <button class="btn btn-acao" onclick="salvarPerfil()" data-i18n="btn_salvar_dados">💾 Salvar dados</button>
+        </div>
+        <div class="painel" style="margin-top:16px">
+          <h3 data-i18n="lbl_tema">Tema de cores</h3>
+          <div class="tema-opcoes" id="temaOpcoes">
+            <button class="tema-btn" onclick="selecionarTema(1)" id="temaBtn1">
+              <span class="tema-ico">🟤</span><span data-i18n="tema_1">Âmbar -Perfumaria</span>
+            </button>
+            <button class="tema-btn" onclick="selecionarTema(2)" id="temaBtn2">
+              <span class="tema-ico">🌙</span><span data-i18n="tema_2">Dark mode</span>
+            </button>
+            <button class="tema-btn" onclick="selecionarTema(3)" id="temaBtn3">
+              <span class="tema-ico">☀️</span><span data-i18n="tema_3">Light mode</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SEGURANÇA (senha + validade) ============ -->
+      <section id="viewSeguranca" class="view hidden">
+        <div class="view-titulo"><h2 data-i18n="menu_seguranca">Segurança</h2></div>
+        <p class="nota" id="notaValidade" style="margin-bottom:16px"></p>
+        <div class="painel">
+          <h3 data-i18n="h_trocar_senha">Trocar senha</h3>
+          <div class="campo" style="margin-top:14px">
+            <label data-i18n="lbl_senha_atual">Senha atual</label>
+            <div class="campo-senha">
+              <input type="password" id="pfSenhaAtual">
+              <button type="button" class="olho" onclick="alternarSenha('pfSenhaAtual', this)">👁</button>
+            </div>
+          </div>
+          <div class="campo">
+            <label data-i18n="lbl_senha_nova">Nova senha</label>
+            <div class="campo-senha">
+              <input type="password" id="pfSenhaNova" oninput="renderForcaSenha('pfSenhaNova','forcaPfSenha')">
+              <button type="button" class="olho" onclick="alternarSenha('pfSenhaNova', this)">👁</button>
+            </div>
+            <div id="forcaPfSenha" class="forca-senha-wrap"></div>
+            <p class="hint-senha" data-i18n="hint_senha">Mín. 8 caracteres, letra maiúscula, minúscula e número.</p>
+          </div>
+          <button class="btn btn-acao" onclick="trocarSenha()" data-i18n="btn_alterar_senha">🔒 Alterar senha</button>
+          <div style="margin-top:24px">
+            <button class="btn btn-perigo" onclick="acaoLogout()" data-i18n="btn_sair">⏻ Sair da conta</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ============ MODAL GENÉRICO ============ -->
+  <div id="modalFundo" class="hidden" onclick="if(event.target===this)fecharModal()">
+    <div class="modal-caixa" id="modalConteudo"></div>
+  </div>
+
   
-    (function () {
-      var splash = document.getElementById('splash');
 
-      if (!APP_URL || APP_URL.indexOf('COLE_AQUI') === 0) {
-        splash.innerHTML = '<div style="text-align:center;max-width:320px;padding:24px;font-family:sans-serif">' +
-          '<div style="font-size:42px">⚙️</div>' +
-          '<p style="color:#e0b878;font-size:18px;margin:12px 0 6px">Falta configurar</p>' +
-          '<p style="font-size:13px;line-height:1.6">Edite o arquivo <b>index.html</b> e cole a URL <b>/exec</b> ' +
-          'do seu Apps Script na variável <code>APP_URL</code>.</p></div>';
-        return;
-      }
-
-      // navega direto pro app (substitui esta página no histórico, sem deixar
-      // a splash como um passo extra pro botão "voltar")
-      window.location.replace(APP_URL);
-
-      // registra o service worker (necessário para instalar como app)
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-          navigator.serviceWorker.register('sw.js').catch(function () {});
-        });
-      }
-    })();
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      });
+    }
   </script>
 </body>
 </html>

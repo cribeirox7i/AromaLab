@@ -1,11 +1,14 @@
-/* AromaLab — Service Worker da casca PWA
- * Faz cache APENAS dos arquivos da casca (mesma origem).
- * Nunca intercepta o conteúdo do app (script.google.com/exec, outra origem).
+/* AromaLab — Service Worker do app estático
+ * Faz cache dos arquivos da própria origem (shell + CSS/JS).
+ * Nunca intercepta /api/* (chamadas dinâmicas ao proxy) - essas sempre
+ * precisam ir direto pro servidor, nunca servidas do cache.
  */
-const CACHE = 'aromalab-casca-v3';
+const CACHE = 'aromalab-app-v3';
 const ASSETS = [
   './',
   './index.html',
+  './style.css',
+  './app.js',
   './manifest.webmanifest',
   './icon.svg',
   './icon-192.png',
@@ -30,8 +33,8 @@ self.addEventListener('activate', function (e) {
 
 self.addEventListener('fetch', function (e) {
   const url = new URL(e.request.url);
-  // só mexe nos arquivos da própria origem; chamadas à API (outra origem) passam direto
-  if (url.origin === self.location.origin) {
+  // só mexe nos arquivos estáticos da própria origem; /api/* (proxy) sempre direto pro servidor
+  if (url.origin === self.location.origin && url.pathname.indexOf('/api/') !== 0) {
     e.respondWith(
       caches.match(e.request).then(function (resp) { return resp || fetch(e.request); })
     );

@@ -352,36 +352,22 @@ const AVATAR_PADRAO = 'data:image/svg+xml;utf8,' + encodeURIComponent(
   '<ellipse cx="50" cy="82" rx="30" ry="20" fill="#c98e4a"/></svg>');
 
 // ---------- comunicação com o servidor ----------
-/* URL /exec da implantação do Apps Script (Implantar → Gerenciar implantações → copiar URL). */
-const APP_URL = 'https://script.google.com/macros/s/AKfycbzUttvI6kZXkUyquJM3UGC-Su4Y1dEKWLme7uC6If741hNOzPRbQ8Hjq9fKx7a_Ivg5/exec';
-
-// Nem GET nem POST via fetch()/XHR recebem Access-Control-Allow-Origin do
-// Apps Script (testado - as duas formas são bloqueadas por CORS). A saída é
-// JSONP: carregar a resposta como uma tag <script src="...">, que não passa
-// pelo bloqueio de CORS (mesmo mecanismo de carregar uma lib de outro domínio).
-let _jsonpContador = 0;
+// Chama nosso próprio proxy (/api/proxy, mesmo domínio do site), que por sua
+// vez repassa a chamada pro Apps Script servidor-a-servidor. Sem CORS, sem
+// iframe, sem JSONP - é só um fetch comum no mesmo domínio.
 function api(acao, payload) {
-  return new Promise(function (resolve, reject) {
-    const dados = encodeURIComponent(JSON.stringify({ acao: acao, payload: payload || {}, token: S.token }));
-    const nomeCb = '_aromalabCb' + (_jsonpContador++);
-    const script = document.createElement('script');
-
-    function limpar() {
-      delete window[nomeCb];
-      if (script.parentNode) script.parentNode.removeChild(script);
-    }
-
-    window[nomeCb] = function (r) {
-      limpar();
-      if (r && r.ok) return resolve(r.data);
+  return fetch('/api/proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ acao: acao, payload: payload || {}, token: S.token })
+  })
+    .then(function (resp) { return resp.json(); })
+    .then(function (r) {
+      if (r && r.ok) return r.data;
       const msg = (r && r.erro) || 'Erro desconhecido';
-      if (msg === 'SESSAO_INVALIDA') { encerrarSessaoLocal(); return reject(new Error(t('msg_sessao_expirada'))); }
-      reject(new Error(traduzErro(msg)));
-    };
-    script.onerror = function () { limpar(); reject(new Error('Falha de conexão com o servidor.')); };
-    script.src = APP_URL + '?data=' + dados + '&callback=' + nomeCb;
-    document.body.appendChild(script);
-  });
+      if (msg === 'SESSAO_INVALIDA') { encerrarSessaoLocal(); throw new Error(t('msg_sessao_expirada')); }
+      throw new Error(traduzErro(msg));
+    });
 }
 
 // ---------- utilitários de UI ----------
@@ -1830,10 +1816,11 @@ function buscarFormulasGerais() {
 function irPagFormulasGerais(p) { _carregarFormulasGeral(FORM_GERAL, p); }
 function abrirDetalheFormulaGeralLog(formId) { _abrirDetalheFormulaGeral(FORM_GERAL, formId); }
 
-// Tamanho final do avatar (quadrado). A API do frontend estático vai por GET
-// (dados na URL, ver api() acima), então a foto precisa ser pequena - por
-// isso ela é redimensionada/comprimida no navegador antes de enviar,
-// independente do tamanho do arquivo original.
+// Tamanho final do avatar (quadrado). Redimensionado/comprimido no navegador
+// antes de enviar - não por limite de URL (isso não existe mais, é POST),
+// mas porque a função serverless da Vercel tem um teto de tamanho de corpo
+// da requisição (~4.5MB) e uma foto de celular em base64 facilmente passa
+// disso. Também é só mais rápido de enviar e ocupa menos espaço no Drive.
 const FOTO_LADO_PX = 256;
 const FOTO_QUALIDADE_JPEG = 0.82;
 
