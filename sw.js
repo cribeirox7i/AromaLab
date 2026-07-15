@@ -3,7 +3,7 @@
  * Nunca intercepta /api/* (chamadas dinâmicas ao proxy) - essas sempre
  * precisam ir direto pro servidor, nunca servidas do cache.
  */
-const CACHE = 'aromalab-app-v4';
+const CACHE = 'aromalab-app-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const ASSETS = [
   './icon.svg',
   './icon-192.png',
   './icon-512.png',
+  './icon-apple-touch.png',
   './logo.png'
 ];
 

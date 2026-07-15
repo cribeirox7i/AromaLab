@@ -331,6 +331,30 @@
   .nav-sep {
     width: 6px; height: 1px; background: transparent; margin: 0; flex-shrink: 0;
   }
+  /* Menu hambúrguer (Biblioteca: Insumos, Fórmulas gerais, Glossário) */
+  .hamb-wrap { position: relative; }
+  .btn-hamb {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 8px; border: 1px solid var(--line);
+    background: rgba(201,142,74,.03); color: var(--muted); cursor: pointer; transition: all .2s;
+  }
+  .btn-hamb:hover, .btn-hamb.ativo { color: var(--gold); border-color: var(--amber); background: rgba(201,142,74,.08); }
+  .menu-biblioteca {
+    position: absolute; top: calc(100% + 8px); left: 0; z-index: 200;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); min-width: 190px; padding: 6px;
+  }
+  .menu-biblioteca-rotulo {
+    display: block; font-size: 9.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--muted); opacity: .85; padding: 6px 10px 4px; user-select: none;
+  }
+  .menu-biblioteca button {
+    width: 100%; text-align: left; background: transparent; border: none;
+    color: var(--cream); font-family: 'Inter'; font-size: 13px; font-weight: 500;
+    padding: 10px 10px; border-radius: 8px; cursor: pointer; transition: background .15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .menu-biblioteca button:hover, .menu-biblioteca button.ativo { background: rgba(201,142,74,.1); color: var(--gold); }
   .avatar-top { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--amber);
                 object-fit: cover; cursor: pointer; background: var(--panel-3); }
   .sel-idioma {
@@ -603,6 +627,7 @@
   #publicShell { background: #f5f0eb; min-height: 100vh; color: #1a0f08; }
   .pub-main { max-width: 1180px; margin: 0 auto; padding: 32px 32px 80px; }
   .pub-catalogo-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+  .pub-catalogo-header > div { min-width: 0; flex: 1 1 auto; }
   .pub-catalogo-titulo {
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-size: 48px; font-weight: 700; color: #1a0f08; line-height: 1;

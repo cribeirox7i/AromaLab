@@ -67,6 +67,7 @@ const I18N = {
   insumos_sub:       { pt: 'Catálogo de matérias-primas (somente consulta)', en: 'Raw materials catalog (read only)', es: 'Catálogo de materias primas (solo consulta)' },
   formulas_sub:      { pt: 'Suas fórmulas e criações aromáticas.', en: 'Your formulas and aromatic creations.', es: 'Tus fórmulas y creaciones aromáticas.' },
   ph_busca_insumo:   { pt: '🔎 Buscar por nome, CAS, tipo…', en: '🔎 Search by name, CAS, type…', es: '🔎 Buscar por nombre, CAS, tipo…' },
+  ph_busca_insumo_pub: { pt: 'Buscar por nome, CAS, tipo…', en: 'Search by name, CAS, type…', es: 'Buscar por nombre, CAS, tipo…' },
   opt_todos_tipos:   { pt: 'Todos os tipos', en: 'All types', es: 'Todos los tipos' },
   th_nome:           { pt: 'Nome', en: 'Name', es: 'Nombre' },
   th_tipo:           { pt: 'Tipo', en: 'Type', es: 'Tipo' },
@@ -445,11 +446,14 @@ function validarSenhaCliente(senha) {
   return null;
 }
 
+const ICONE_OLHO_ABERTO = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+const ICONE_OLHO_FECHADO = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.94 10.94 0 0 1 12 5c7 0 11 7 11 7a21.62 21.62 0 0 1-3.22 4.36M6.61 6.61A21.62 21.62 0 0 0 1 12s4 7 11 7a10.94 10.94 0 0 0 5.39-1.61"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
 function alternarSenha(idInput, btn) {
   const input = $(idInput);
   const visivel = input.type === 'text';
   input.type = visivel ? 'password' : 'text';
-  btn.textContent = visivel ? '👁' : '🙈';
+  btn.innerHTML = visivel ? ICONE_OLHO_ABERTO : ICONE_OLHO_FECHADO;
 }
 
 /* ===========================================================
@@ -484,9 +488,12 @@ function mostrarView(viewId) {
   S.viewAtual = viewId;
   document.querySelectorAll('main .view').forEach(function (v) { v.classList.add('hidden'); });
   $(viewId).classList.remove('hidden');
-  document.querySelectorAll('nav button').forEach(function (b) {
+  document.querySelectorAll('nav button, #menuBiblioteca button').forEach(function (b) {
     b.classList.toggle('ativo', b.dataset.view === viewId);
   });
+  var itemBiblioteca = ['viewInsumos', 'viewFormulasGerais', 'viewGlossario'].indexOf(viewId) !== -1;
+  var btnHamb = document.querySelector('.btn-hamb');
+  if (btnHamb) btnHamb.classList.toggle('ativo', itemBiblioteca);
   window.scrollTo(0, 0);
   if (viewId === 'viewHome')          carregarDashboard();
   if (viewId === 'viewInsumos')       carregarInsumos();
@@ -537,10 +544,18 @@ function toggleMenuAvatar() {
 function fecharMenuAvatar() {
   $('menuAvatar').classList.add('hidden');
 }
-// fechar menu ao clicar fora
+function toggleMenuBiblioteca() {
+  $('menuBiblioteca').classList.toggle('hidden');
+}
+function fecharMenuBiblioteca() {
+  $('menuBiblioteca').classList.add('hidden');
+}
+// fechar menus ao clicar fora
 document.addEventListener('click', function (e) {
   const wrap = $('avatarWrap');
   if (wrap && !wrap.contains(e.target)) fecharMenuAvatar();
+  const hambWrap = $('hambWrap');
+  if (hambWrap && !hambWrap.contains(e.target)) fecharMenuBiblioteca();
 });
 
 // ---------- inicialização ----------
