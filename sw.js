@@ -3,7 +3,7 @@
  * Nunca intercepta /api/* (chamadas dinâmicas ao proxy) - essas sempre
  * precisam ir direto pro servidor, nunca servidas do cache.
  */
-const CACHE = 'aromalab-app-v5';
+const CACHE = 'aromalab-app-v6';
 const ASSETS = [
   './',
   './index.html',
