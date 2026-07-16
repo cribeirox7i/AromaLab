@@ -766,7 +766,7 @@
   /* ============ RESPONSIVIDADE MOBILE ============ */
   @media (max-width: 720px) {
     .topbar { padding: 10px 16px; gap: 12px; justify-content: space-between; }
-    .topbar .logo .brand { font-size: 21px; }
+    .topbar .logo .brand { font-size: 16px; }
     .topbar .logo .icone { font-size: 22px; }
 
     .nav-sep { display: none; }
